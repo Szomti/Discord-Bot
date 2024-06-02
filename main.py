@@ -18,10 +18,11 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 async def debug(ctx: discord.ApplicationContext):
     await ctx.send('test')
 
-@bot.command(name='clear', description='clear 10 last messages')
+@bot.command(name='clear', description='clear messages')
 @commands.has_role(RoleId.admin)
-async def clear(ctx: discord.ApplicationContext):
-    await ctx.channel.purge(limit=10)
+async def clear(ctx: discord.ApplicationContext, num: int = 1):
+    await ctx.message.delete()
+    await ctx.channel.purge(limit=num)
 
 @bot.command(description='Create menu for role selection')
 @commands.has_role(RoleId.admin)
