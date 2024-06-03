@@ -7,14 +7,14 @@ class Channel:
     def get_role_id(self) -> int:
         match self.id:
             case ChannelId.neu:
-                return RoleId.neu
+                return Roles.neu
             case ChannelId.skytils:
-                return RoleId.skytils
+                return Roles.skytils
             case ChannelId.skyhanni:
-                return RoleId.skyhanni
+                return Roles.skyhanni
             case ChannelId.bazaar_notifier:
-                return RoleId.bazaar_notifier
+                return Roles.bazaar_notifier
             case ChannelId.skyblock_addons:
-                return RoleId.skyblock_addons
+                return Roles.skyblock_addons
             case _:
                 return None
