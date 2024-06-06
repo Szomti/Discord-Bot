@@ -125,7 +125,7 @@ async def on_message(message: discord.Message):
         channel = message.channel
         if(guild.id != GUILD_ID):
             return await channel.send('Guild ID not correct')
-        if message.channel.id == ChannelId.hello:
+        if channel.id == ChannelId.hello:
             await message.delete()
             return
         if await ping_by_channel(guild, channel):
@@ -159,7 +159,7 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
 async def ping_by_channel(guild: discord.Guild, channel: discord.TextChannel) -> bool:
     role = guild.get_role(Channel(channel.id).get_role_id())
     if role == None: return False
-    all_role = guild.get_role(Roles.all)
+    all_role = guild.get_role(Roles.all.id)
     await channel.send('Update: '+all_role.mention+' '+role.mention)
     return True
 
