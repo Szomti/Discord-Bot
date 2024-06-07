@@ -1,2 +1,2 @@
-CALL .venv\Scripts\activate
+CALL .\.venv\Scripts\activate
 py main.py

@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
-from datetime import datetime, timezone
+from datetime import datetime
+import time
 import os
 import discord
 from discord.ext import commands
@@ -7,6 +8,7 @@ from constants import *
 from channel import Channel
 from logger import log
 from checkpoint import *
+import asyncio
 
 load_dotenv()
 updates_checkpoint = UpdatesCheckpoint()
@@ -113,6 +115,13 @@ async def on_ready():
     log(f'>> Bot is Ready <<')
     date = datetime.now()
     await guild.get_channel(ChannelId.bot_info).send(f'<t:{int(date.timestamp())}:d><t:{int(date.timestamp())}:T> Bot Started')
+    try:
+        task = asyncio.create_task(log_uptime())
+        asyncio.gather(task, return_exceptions=True)
+    except Exception as e:
+        if e is not KeyboardInterrupt:
+            log(e)
+        
 
 @bot.listen()
 async def on_member_join(member: discord.Member):
@@ -171,5 +180,23 @@ async def check_new_data_by_channel(guild: discord.Guild, channel_id: int):
         log(f'New data in channel: {temp_channel.name} - {channel_id}')
         await ping_by_channel(guild, temp_channel)
         updates_checkpoint.set_data_by_channel(channel_id, temp_channel.last_message_id)
+
+async def log_uptime():
+    message = None
+    start = datetime.now()
+    guild = bot.get_guild(GUILD_ID)
+    channel = guild.get_channel(ChannelId.bot_info)
+    while(True):
+        time.sleep(15)
+        now = datetime.now()
+        diff = now - start
+        total_seconds = int(diff.total_seconds())
+        hours, remaining = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remaining, 60)
+        text = f'Bot alive for: {'{} hrs {} mins {} secs'.format(hours,minutes,seconds)}'
+        if message is None:
+            message = await channel.send(text)
+        else:
+            await message.edit(text)
         
 bot.run(os.getenv('TOKEN'))
