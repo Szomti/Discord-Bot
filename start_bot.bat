@@ -1,2 +1,2 @@
-CALL .venv\Scripts\activate.bat
+CALL .venv\Scripts\activate
 py main.py
