@@ -17,6 +17,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+app_running = True
+
 bot = commands.Bot(command_prefix='?', intents=intents)
         
 @bot.command(name='debug', description='debug stuff etc.')
@@ -51,6 +53,22 @@ async def welcome_info(ctx: discord.ApplicationContext, data: int | None):
 async def clear(ctx: discord.ApplicationContext, num: int = 1):
     await ctx.message.delete()
     await ctx.channel.purge(limit=num)
+
+@bot.command(name='force_stop', description='force stop the app')
+@commands.has_role(Roles.admin.id)
+async def force_stop(ctx: discord.ApplicationContext):
+    try:
+        if ctx.author.id != OWNER_ID:
+            log(f'user: [{ctx.author.id}] tried to force stop the app')
+            return
+        global app_running
+        app_running = False
+        log('App force stopped')
+        await ctx.message.delete()
+        await bot.close()
+        exit(1)
+    except Exception as e:
+        log(e)
 
 @bot.command(description='Create menu for role selection')
 @commands.has_role(Roles.admin.id)
@@ -87,6 +105,7 @@ async def roles(ctx: discord.ApplicationContext):
             if role.icon is not None:
                 await sent.add_reaction(role.icon)
     except Exception as e:
+        log(e)
         await ctx.send(e)
 
 @bot.slash_command(description='Register app comand usage (badge)')
@@ -185,8 +204,11 @@ async def log_uptime():
     start = datetime.now()
     guild = bot.get_guild(GUILD_ID)
     channel = guild.get_channel(ChannelId.bot_info)
+    global app_running
     while(True):
         await asyncio.sleep(10)
+        if not app_running:
+            break
         now = datetime.now()
         diff = now - start
         total_seconds = int(diff.total_seconds())
