@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from datetime import datetime
-import time
 import os
 import discord
 from discord.ext import commands
@@ -187,7 +186,7 @@ async def log_uptime():
     guild = bot.get_guild(GUILD_ID)
     channel = guild.get_channel(ChannelId.bot_info)
     while(True):
-        time.sleep(15)
+        await asyncio.sleep(10)
         now = datetime.now()
         diff = now - start
         total_seconds = int(diff.total_seconds())
