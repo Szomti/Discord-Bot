@@ -56,7 +56,7 @@ class UpdatesCheckpoint:
             case _:
                 return None
             
-    def set_data_by_channel(self, channel_id: int, message_id: int) -> int:
+    def set_data_by_channel(self, channel_id: int, message_id: int):
         match channel_id:
             case ChannelId.neu:
                 self.neu = message_id
@@ -104,8 +104,9 @@ class UpdatesCheckpoint:
         if count > 6 or len(data) > 120:
             log('DATA MIGHT BE CORRUPTED')
             log('Saving to logs.txt')
-            f.open('./logs.txt', 'a')
-            f.write(f'\n\n[{datetime.now()}] Data to save bigger than expected\n{data}')
+            l_f = open('./logs.txt', 'a')
+            l_f.write(f'\n\n[{datetime.now()}] Data to save bigger than expected\n{data}')
             log('Saved to logs.txt -> aborting saving to data.txt')
+            l_f.close()
         f.write(data)
         f.close

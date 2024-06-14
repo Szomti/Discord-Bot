@@ -208,6 +208,7 @@ async def log_uptime():
     while(True):
         await asyncio.sleep(10)
         if not app_running:
+            message = None
             break
         now = datetime.now()
         diff = now - start
