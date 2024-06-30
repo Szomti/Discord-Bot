@@ -18,6 +18,8 @@ intents.message_content = True
 intents.members = True
 
 app_running = True
+tasks = None
+uptime_message_id = None
 
 bot = commands.Bot(command_prefix='?', intents=intents)
         
@@ -66,6 +68,8 @@ async def force_stop(ctx: discord.ApplicationContext):
         log('App force stopped')
         await ctx.message.delete()
         await bot.close()
+        if tasks is not None:
+            tasks.cancel()
         exit(1)
     except Exception as e:
         log(e)
@@ -134,8 +138,9 @@ async def on_ready():
     date = datetime.now()
     await guild.get_channel(ChannelId.bot_info).send(f'<t:{int(date.timestamp())}:d><t:{int(date.timestamp())}:T> Bot Started')
     try:
+        global tasks
         task = asyncio.create_task(log_uptime())
-        asyncio.gather(task, return_exceptions=True)
+        tasks = asyncio.gather(task, return_exceptions=True)
     except Exception as e:
         if e is not KeyboardInterrupt:
             log(e)
@@ -200,15 +205,14 @@ async def check_new_data_by_channel(guild: discord.Guild, channel_id: int):
         updates_checkpoint.set_data_by_channel(channel_id, temp_channel.last_message_id)
 
 async def log_uptime():
-    message = None
     start = datetime.now()
     guild = bot.get_guild(GUILD_ID)
     channel = guild.get_channel(ChannelId.bot_info)
-    global app_running
+    global app_running, uptime_message_id
     while(True):
         await asyncio.sleep(10)
         if not app_running:
-            message = None
+            uptime_message_id = None
             break
         now = datetime.now()
         diff = now - start
@@ -216,9 +220,10 @@ async def log_uptime():
         hours, remaining = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remaining, 60)
         text = f'Bot alive for: {'{} hrs {} mins {} secs'.format(hours,minutes,seconds)}'
-        if message is None:
-            message = await channel.send(text)
+        if uptime_message_id is None:
+            uptime_message_id = (await channel.send(text)).id
         else:
-            await message.edit(text)
+            await bot.get_message(uptime_message_id).edit(text)
+
         
 bot.run(os.getenv('TOKEN'))
