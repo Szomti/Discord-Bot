@@ -187,6 +187,18 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
         if str(payload.emoji) == role.icon:
             guild = bot.get_guild(GUILD_ID)
             await guild.get_member(payload.user_id).remove_roles(guild.get_role(role.id))
+
+async def stop_app():
+    try:
+        global app_running
+        app_running = False
+        log('App stopped')
+        await bot.close()
+        if tasks is not None:
+            tasks.cancel()
+        exit(1)
+    except Exception as e:
+        log(e)
         
 async def ping_by_channel(guild: discord.Guild, channel: discord.TextChannel) -> bool:
     role = guild.get_role(Channel(channel.id).get_role_id())
@@ -220,6 +232,11 @@ async def log_uptime():
         hours, remaining = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remaining, 60)
         text = f'Bot alive for: {'{} hrs {} mins {} secs'.format(hours,minutes,seconds)}'
+        if(total_seconds%3600 == 0):
+            log(text)
+        if(hours >= 12):
+            log('12 Hours passed - automatic stop')
+            await stop_app()
         if uptime_message_id is None:
             uptime_message_id = (await channel.send(text)).id
         else:
